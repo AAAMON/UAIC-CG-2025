@@ -52,26 +52,61 @@ class Turtle {
         void resetRotation() {m_angle = 0;}
 };
 
+// x and y are middle of current square
+// distance = length of current square (NOT THE SQUARE WE'RE DRAWING)
+void sierpinskiCarpet(float x, float y, float distance, int maxRecursion)
+{
+    // DEBUG
+    // std::cout << "At center: " << x << ' ' << y << "; with distance =" << distance << '\n';
+    distance /= 3;
+    // draw square in middle
+    Turtle t(x - distance/2, y - distance/2);
+    t.draw(distance);
+    t.rotate(M_PI/2);
+    t.draw(distance);
+    t.rotate(M_PI/2);
+    t.draw(distance);
+    t.rotate(M_PI/2);
+    t.draw(distance);
 
+    
+    --maxRecursion;
+    if (maxRecursion == 0)
+        return;
+    // go for other sub squares
+    sierpinskiCarpet(x-distance, y-distance, distance, maxRecursion);
+    sierpinskiCarpet(x, y-distance, distance, maxRecursion);
+    sierpinskiCarpet(x+distance, y-distance, distance, maxRecursion);
+
+    sierpinskiCarpet(x-distance, y, distance, maxRecursion);
+    sierpinskiCarpet(x+distance, y, distance, maxRecursion);
+
+    sierpinskiCarpet(x-distance, y+distance, distance, maxRecursion);
+    sierpinskiCarpet(x, y+distance, distance, maxRecursion);
+    sierpinskiCarpet(x+distance, y+distance, distance, maxRecursion);
+}
 // sierpinski carpet fractal
 void Display1() {
+    int maxRecursion = 4; // +1
+    // IDEA /////////////////////////
+    // 1. Draw daddy square
+    // 2. Draw square from middle
+    // 3. If iterations left, get all other subsquares and repeat from 2.
+
+    // Big square
     glColor3f(1, 0, 0);
     // 0,0 e centrul ecranului
     Turtle t0(-0.95, -0.95);
     float distance = 1.9;
-
     t0.draw(distance);
-
     t0.rotate(M_PI/2);
     t0.draw(distance);
-  
     t0.rotate(M_PI/2);
     t0.draw(distance);
-  
     t0.rotate(M_PI/2);
     t0.draw(distance);
 
-
+    sierpinskiCarpet(0, 0, distance, maxRecursion);
   }
 
 // pentagon fractal
@@ -158,7 +193,7 @@ void initGraphics(int argc, char** argv)
 
     // colors and sizes
     glClearColor(1.0,1.0,1.0,1.0);
-    glLineWidth(3);
+    glLineWidth(2);
     glPointSize(20);
 
     // cb's
