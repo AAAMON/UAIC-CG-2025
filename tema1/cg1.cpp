@@ -1,32 +1,77 @@
 #include <iostream>
+#include <cmath>
 #include <GL/glut.h> 
 
 const int DEFAULT_WINDOW_W = 1000;
 const int DEFAULT_WINDOW_H = 1000;
 
-unsigned char prevKey;
+unsigned char prevKey = '1';
 
-// square fractal
+
+class Turtle {
+    /*
+      Turtle Graphics:
+      draw using points, directions and distances.
+      (Radial coordinates.)
+    */
+    protected:
+        double m_x, m_y;
+        double m_angle;
+    
+    public:
+        Turtle(double x = 0, double y = 0):
+            m_x(x),
+            m_y(y),
+            m_angle(0) { }
+        
+        void rotate(double angle) {
+            m_angle += angle;
+        }
+        
+        void move(double distance) {
+            //Move the Turtle without drawing.
+            /*
+            We convert from Radial coordinates
+            to Cartesian coordinates.
+            */
+            m_x += distance * cos(m_angle);
+            m_y += distance * sin(m_angle);
+        }
+        
+        void draw(double distance) {
+            //Move the Turtle and draw its path.
+            glBegin(GL_LINES); {
+            glVertex2d(m_x, m_y);
+            move(distance);
+            glVertex2d(m_x, m_y);
+            }
+            glEnd();
+        }
+        
+        void resetPos() {m_x = 0; m_y = 0;}
+        void resetRotation() {m_angle = 0;}
+};
+
+
+// sierpinski carpet fractal
 void Display1() {
-    glColor3f(0.2,0.15,0.88); // blue
-    glBegin(GL_LINES); { // we'll draw lines; don't forget the ';'
-      glVertex2i(1,1); // the coordinates of a vertex (2d, integer coordinates)
-      glVertex2i(-1,-1);
-    }
-    glEnd();
+    glColor3f(1, 0, 0);
+    // 0,0 e centrul ecranului
+    Turtle t0(-0.95, -0.95);
+    float distance = 1.9;
+
+    t0.draw(distance);
+
+    t0.rotate(M_PI/2);
+    t0.draw(distance);
   
-    glColor3f(1,0.1,0.1); // red
-    glBegin(GL_LINES); {
-      glVertex2i(-1,1);
-      glVertex2i(1,-1);
-    }
-    glEnd();
+    t0.rotate(M_PI/2);
+    t0.draw(distance);
   
-    glBegin(GL_LINES); {
-      glVertex2d(-0.5,0);
-      glVertex2d(0.5,0);
-    }
-    glEnd();
+    t0.rotate(M_PI/2);
+    t0.draw(distance);
+
+
   }
 
 // pentagon fractal
