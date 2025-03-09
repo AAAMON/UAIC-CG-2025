@@ -1,19 +1,16 @@
 #include <iostream>
 #include <cmath>
 #include <GL/glut.h> 
+#include <complex>
 
 const int DEFAULT_WINDOW_W = 1000;
 const int DEFAULT_WINDOW_H = 1000;
+double g_jfa = -0.82, g_jfb = -0.17; //Julia-Fatou a and b values.
 
 unsigned char prevKey = '1';
 
 
 class Turtle {
-    /*
-      Turtle Graphics:
-      draw using points, directions and distances.
-      (Radial coordinates.)
-    */
     protected:
         double m_x, m_y;
         double m_angle;
@@ -73,7 +70,11 @@ void sierpinskiCarpet(float x, float y, float distance, int maxRecursion)
     --maxRecursion;
     if (maxRecursion == 0)
         return;
-    // go for other sub squares
+
+    // go for other sub squares in this order:
+    // [1] [2] [3]
+    // [4] [ ] [5]
+    // [6] [7] [8]
     sierpinskiCarpet(x-distance, y-distance, distance, maxRecursion);
     sierpinskiCarpet(x, y-distance, distance, maxRecursion);
     sierpinskiCarpet(x+distance, y-distance, distance, maxRecursion);
@@ -85,6 +86,7 @@ void sierpinskiCarpet(float x, float y, float distance, int maxRecursion)
     sierpinskiCarpet(x, y+distance, distance, maxRecursion);
     sierpinskiCarpet(x+distance, y+distance, distance, maxRecursion);
 }
+
 // sierpinski carpet fractal
 void Display1() {
     int maxRecursion = 4; // +1
@@ -114,9 +116,186 @@ void Display2() {
 
 }
 
+void bitmapString(void* font, const char* str) {
+    //Draw a string, character-by-character.
+    char cp;
+    for(const char* c = str; *c != 0; ++c) {
+      cp = *c; //to respect const
+      glutBitmapCharacter(font, cp);
+    }
+  }
+  
+  void drawBitmapString(const char* str, float x = -2, float y = -2) {
+    //Draw a string, optionally setting raster position.
+    /*
+      We define the convetion that both values -2 mean 'do not change
+      raster position'.
+    */
+    if((-2 != x) || (-2 != y)) {
+      glRasterPos2f(x, y);
+    }
+    //freeglut, not old glut: glutBitmapString(GLUT_BITMAP_8_BY_13, str);
+    bitmapString(GLUT_BITMAP_8_BY_13, str);
+  }
+  
+  template <typename Numtype>
+  void drawBitmapNumber(Numtype number, float x = -2, float y = -2) {
+    //Convert a number to a string, then draw it.
+    //We need the template so we don't display '2' as '2.000000'.
+    if((-2 != x) || (-2 != y)) {
+      glRasterPos2f(x, y);
+    }
+    bitmapString(GLUT_BITMAP_8_BY_13, std::to_string(number).c_str());
+  }
+  
+//   void drawRecursionLevel() {
+//     //Simple utility function.
+//     drawBitmapString("Recursion Level: ", -0.98, -0.98);
+//     /*if we don't set explicit raster positions,
+//       drawing characters increments the paster position appropriately
+//     */
+//     drawBitmapNumber(g_recursionCurrent); 
+//   }
+
+  template <typename FloatType>
+class JF {
+protected:
+  //The x and y mathematical bounds of the fractal slice we're displaying.
+  FloatType m_xmin, m_xmax, m_ymin, m_ymax;
+  //The constant we're biasing the JF fractal with.
+  std::complex<FloatType> m_c;
+  //The radius around the origin we're using to detect divergence.
+  FloatType m_maxRadius;
+  //How many iterations we'll do to allow the number sequence to
+  //exceed the limit.
+  int m_maxIteration;
+
+  virtual inline int test(std::complex<FloatType> z, std::complex<FloatType> c, double maxRadius = 2, int maxIteration = 50) {
+    /*
+      Compute the Julia-Fatou set in a point in 4D (x, y, a, b). Return the iterations *left*
+      upon radius breach. So, a return value of 0 means estimated-divergence, other values
+      mean speed of estimated convergence.
+    */
+    //We create a number sequence, and estimate its limit.
+    for(int ii = maxIteration; ii > 0; --ii) {
+      z = z * z + c;
+      if(abs(z) > maxRadius)
+	return(ii);
+    }
+    return 0;
+  }
+  
+public:
+    JF(FloatType xmin, FloatType xmax, FloatType ymin, FloatType ymax, FloatType a = 0, FloatType b = 0, FloatType maxRadius = 20, int maxIteration = 150):
+        m_xmin(xmin),
+        m_xmax(xmax),
+        m_ymin(ymin),
+        m_ymax(ymax),
+        m_c(a, b),
+        m_maxRadius(maxRadius),
+        m_maxIteration(maxIteration) {
+    }
+
+    void draw(FloatType l, FloatType r, FloatType b, FloatType t, int samplePointsHorizontal, int samplePointsVertical) {
+
+            // Clear the background to white
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set background to white (RGBA: 1.0f, 1.0f, 1.0f, 1.0f)
+            glClear(GL_COLOR_BUFFER_BIT);
+        glPointSize(1);
+        FloatType stepx = (m_xmax - m_xmin) / FloatType(samplePointsHorizontal);
+        FloatType stepy = (m_ymax - m_ymin) / FloatType(samplePointsVertical);
+        FloatType steph = (r - l) / FloatType(samplePointsHorizontal);
+        FloatType stepv = (t - b) / FloatType(samplePointsVertical);
+        int iterations;
+        std::complex<FloatType> z;
+        glBegin(GL_POINTS);
+    
+        for (FloatType jj = 0, y = m_ymin, v = b; jj < samplePointsVertical; jj += 1, y += stepy, v += stepv) {
+            z.imag(y);
+    
+            for (FloatType ii = 0, x = m_xmin, h = l; ii < samplePointsHorizontal; ii += 1, x += stepx, h += steph) {
+                z.real(x);
+                // Pass the current (x, y) as the constant c
+                iterations = test(z, std::complex<FloatType>(x, y), m_maxRadius, m_maxIteration);
+    
+                // If the point is inside the Mandelbrot set (iterations == 0), color it red
+                if (iterations == 0) {
+                    glColor3f(1.0f, 0.0f, 0.0f);  // Red color for points inside the set
+                } else {
+                    // Points that are diverging should be white (background)
+                    glColor3f(1.0f, 1.0f, 1.0f);  // White color for points outside the set
+                }
+    
+                glVertex2d(h, v);
+            }
+        }
+        glColor3f(1.0f, 0.0f, 0.0f);
+        glEnd();
+        glColor3f(1.0f, 0.0f, 0.0f);
+    }
+    
+    
+    
+
+
+};
+
+
+template <typename FloatType>
+class MB: public JF<FloatType> {
+protected:
+  virtual inline int test(std::complex<FloatType> z, std::complex<FloatType> c, double maxRadius = 2, int maxIteration = 50) {
+    /*
+      Compute the Mandelbrot set for the given point (z, c). Returns the number of iterations before divergence.
+      - A return value of 0 means inside the set (red).
+      - A return value greater than 0 indicates how fast it diverged (i.e., the number of iterations).
+    */
+
+    // Iterate the function z = z^2 + c
+    for (int i = 0; i < maxIteration; ++i) {
+        // z = z^2 + c
+        z = z * z + c;
+        
+        // If the magnitude of z exceeds the escape radius, it's outside the set
+        if (std::abs(z) > maxRadius) {
+            return 1; // Return the number of iterations before escaping
+        }
+    }
+
+    // If it doesn't escape after maxIteration iterations, consider it inside the set (i.e., red)
+    return 0;
+}
+
+
+
+public:
+  MB(FloatType xmin, FloatType xmax, FloatType ymin, FloatType ymax, FloatType a = 0, FloatType b = 0, FloatType maxRadius = 2, int maxIteration = 100):
+    JF<FloatType>(xmin, xmax, ymin, ymax, a, b, maxRadius, maxIteration) {}
+
+  // You can add additional drawing logic specific to the Mandelbrot set if needed
+};
+
+
+
+
+void drawJfConstants() {
+    drawBitmapString("Julia-Fatou constants: a = ", -0.98, -0.98);
+    drawBitmapNumber(g_jfa);
+    drawBitmapString(", b = ");
+    drawBitmapNumber(g_jfb);
+}
+
 // monochrome mandelbrot
 void Display3() {
-    
+  //Draw the Mandelbrot fractal here.
+  float drawSize = 1.0;
+  MB<double> mb(-2, 2, -2, 2);
+  /*
+    +1 because we're going full-window, and pixel-perfect drawing
+    is weird because pixels are actually placed at 0.5 coordinates.
+    More on this in the Shaders homework and lecture.
+  */
+  mb.draw(-drawSize, drawSize, -drawSize, drawSize, DEFAULT_WINDOW_W + 1, DEFAULT_WINDOW_H + 1);
 }
 
 // colored mandelbrot
@@ -206,7 +385,6 @@ void initGraphics(int argc, char** argv)
 int main(int argc, char** argv) {
     initGraphics(argc, argv);
     glutMainLoop();
-
 
     return 0;
 }
