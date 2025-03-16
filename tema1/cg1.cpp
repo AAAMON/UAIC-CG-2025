@@ -1,5 +1,7 @@
 /*
-  This program plots different 2D functions.
+  Fractals are shapes that repeat their pattern at different scales—think of them as never-ending, self-similar designs.
+  In our assignment, we use turtle graphics where a "turtle" moves around the screen drawing lines based on commands, which is
+  perfect for drawing these recursive patterns.
 */
 
 #include <cstdlib>
@@ -95,31 +97,31 @@ class Turtle
     (Radial coordinates.)
   */
 protected:
-  double m_x, m_y;
-  double m_angle;
+  double m_x, m_y; // the turtle's current position
+  double m_angle;  // the turtle's current heading direction
 
 public:
   Turtle(double x = 0, double y = 0) : m_x(x),
                                        m_y(y),
-                                       m_angle(0) {}
+                                       m_angle(0) {} // initialization of the turtle
 
-  void rotate(double angle)
+  void rotate(double angle) // change direction (COUNTERCLOCKWISE, or towards the LEFT, visually, if given a POSITIVE radian value)
   {
     m_angle += angle;
   }
 
-  void move(double distance)
+  void move(double distance) // change current position (turtle teleports, basically, by calculating the new position using polar coordinates)
   {
     // Move the Turtle without drawing.
     /*
       We convert from Radial coordinates
       to Cartesian coordinates.
      */
-    m_x += distance * cos(m_angle);
-    m_y += distance * sin(m_angle);
+    m_x += distance * cos(m_angle); // conversion formula => makes sure it goes the way it should
+    m_y += distance * sin(m_angle); // conversion formula
   }
 
-  void draw(double distance)
+  void draw(double distance) // move the turtle FORWARD (what we perceive as RIGHT) and visually show the change
   {
     // Move the Turtle and draw its path.
     glBegin(GL_LINES);
@@ -131,15 +133,15 @@ public:
     glEnd();
   }
 
-  void resetPos()
+  void resetPos() // switch to default (convenience function)
   {
     m_x = 0;
     m_y = 0;
   }
-  void resetRotation() { m_angle = 0; }
+  void resetRotation() { m_angle = 0; } // current direction: RIGHT (visually)
 };
 
-void drawCircle(double cx, double cy, double radius, int segments)
+void drawCircle(double cx, double cy, double radius, int segments) // approximates a circle using straight line segments
 {
   // How to draw a circle with Turtle graphics.
   Turtle t;
@@ -180,31 +182,32 @@ void drawCircle(double cx, double cy, double radius, int segments)
   glEnd();
 }
 
-void drawSquare(Turtle t, float distance)
+void drawSquare(Turtle t, float distance) // draws a square by moving forward and turning 90° repeatedly
 {
   /*
     We assume the lower-left point of the square as the starting point,
     and the distance as the side length.
     (so: draw by moving forward and turning left)
   */
-  t.draw(distance);
+
+  t.draw(distance); // cos(0) = 1; sin(0) = 0 => draw towards the right (only on the x axis)
+
+  t.rotate(pi / 2); // rotate 90 degrees (towards the left)
+  t.draw(distance); // cos(90) = 0; sin(90) = 1 => draw upwards (only on the y axis)
 
   t.rotate(pi / 2);
-  t.draw(distance);
+  t.draw(distance); // cos(180) = -1; sin(180) = 0 => draw towards the left
 
   t.rotate(pi / 2);
-  t.draw(distance);
-
-  t.rotate(pi / 2);
-  t.draw(distance);
+  t.draw(distance); // cos(270) = 0; sin(270) = -1 => draw downwards
 }
 
 void fractalKochCurve(Turtle t, float distance, int recursionsLeft = 1)
 {
-  if (recursionsLeft > 0)
+  if (recursionsLeft > 0) // recursively splits the current line in 4 parts (segments): _/\_
   {
     --recursionsLeft;
-    distance /= 3;
+    distance /= 3; // after each recursion, the segment length is reduced (because each smaller segment is supposed to be one-third of the original)
 
     // Draw straight forwards: '_'
     fractalKochCurve(t, distance, recursionsLeft);
@@ -270,7 +273,7 @@ void Display1()
 
 void fractalBinaryTree(Turtle t, float distance, int recursionsLeft = 1)
 {
-  if (recursionsLeft > 0)
+  if (recursionsLeft > 0) // draws a branch and then creates two smaller branches (by rotating left and right) recursively
   {
     --recursionsLeft;
     t.draw(distance);
@@ -303,7 +306,9 @@ void sierpinskiCarpet(float x, float y, float distance, int maxRecursion)
   // std::cout << "At center: " << x << ' ' << y << "; with distance =" << distance << '\n';
   distance /= 3;
   // draw square in middle
-  Turtle t(x - distance / 2, y - distance / 2);
+  Turtle t(x - distance / 2, y - distance / 2); // positions turtle at the bottom-left of the middle square
+  drawSquare(t, distance);                      // if the function is there, why not use it? :D
+  /*
   t.draw(distance);
   t.rotate(M_PI / 2);
   t.draw(distance);
@@ -311,12 +316,13 @@ void sierpinskiCarpet(float x, float y, float distance, int maxRecursion)
   t.draw(distance);
   t.rotate(M_PI / 2);
   t.draw(distance);
+  */
 
   --maxRecursion;
   if (maxRecursion == 0)
     return;
 
-  // go for other sub squares in this order:
+  // go for other sub squares in this order (skipping the center):
   // [1] [2] [3]
   // [4] [ ] [5]
   // [6] [7] [8]
@@ -337,6 +343,7 @@ void Display3()
   // Draw the recursive-square fractal here.
 
   // int maxRecursion = 4; // +1
+
   // IDEA /////////////////////////
   // 1. Draw daddy square
   // 2. Draw square from middle
@@ -349,6 +356,8 @@ void Display3()
   // 0,0 e centrul ecranului
   Turtle t0(-0.95, -0.95);
   float distance = 1.9;
+  drawSquare(t0, distance); // draw the center square, then start recursion (as that needs the current square to be ALREADY on the screen)
+  /*
   t0.draw(distance);
   t0.rotate(M_PI / 2);
   t0.draw(distance);
@@ -356,16 +365,60 @@ void Display3()
   t0.draw(distance);
   t0.rotate(M_PI / 2);
   t0.draw(distance);
+  */
 
   // sierpinskiCarpet(0, 0, distance, maxRecursion); // recursion is now set globally
   sierpinskiCarpet(0, 0, distance, g_recursionCurrent);
 }
 
-void Display4() // TODO: for Ama
+void fractalHexLine(Turtle t, float distance, int recursionsLeft = 1)
+{
+  if (recursionsLeft > 0)
+  {
+    --recursionsLeft;
+    distance /= 5;
+
+    // First segment
+    fractalHexLine(t, distance, recursionsLeft);
+    t.move(distance);
+
+    // Left turn (start hex bump)
+    t.rotate(pi / 3);
+    fractalHexLine(t, distance, recursionsLeft);
+    t.move(distance);
+
+    // Left turn
+    t.rotate(pi / 3);
+    fractalHexLine(t, distance, recursionsLeft);
+    t.move(distance);
+
+    // Right turn
+    t.rotate(-pi / 3);
+    fractalHexLine(t, distance, recursionsLeft);
+    t.move(distance);
+
+    // Right turn (end hex bump)
+    t.rotate(-pi / 3);
+    fractalHexLine(t, distance, recursionsLeft);
+    t.move(distance);
+
+    // Last straight segment
+    fractalHexLine(t, distance, recursionsLeft);
+  }
+  else
+  {
+    t.draw(distance);
+  }
+}
+
+void Display4()
 {
   // Draw the triangle-like hex line fractal here.
   glColor3f(1, 0, 0);
   drawRecursionLevel();
+
+  Turtle t(-0.95, -0.95); // start from the lower-left corner
+  fractalHexLine(t, 1.9, g_recursionCurrent);
 }
 
 template <typename FloatType>
@@ -444,49 +497,6 @@ public:
     }
     glEnd();
   }
-
-  void drawMB(FloatType l, FloatType r, FloatType b, FloatType t, int samplePointsHorizontal, int samplePointsVertical)
-  {
-    // Clear the background to white
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set background to white (RGBA: 1.0f, 1.0f, 1.0f, 1.0f)
-    glClear(GL_COLOR_BUFFER_BIT);
-    glPointSize(1);
-    FloatType stepx = (m_xmax - m_xmin) / FloatType(samplePointsHorizontal);
-    FloatType stepy = (m_ymax - m_ymin) / FloatType(samplePointsVertical);
-    FloatType steph = (r - l) / FloatType(samplePointsHorizontal);
-    FloatType stepv = (t - b) / FloatType(samplePointsVertical);
-    int iterations;
-    std::complex<FloatType> z;
-    glBegin(GL_POINTS);
-
-    for (FloatType jj = 0, y = m_ymin, v = b; jj < samplePointsVertical; jj += 1, y += stepy, v += stepv)
-    {
-      z.imag(y);
-
-      for (FloatType ii = 0, x = m_xmin, h = l; ii < samplePointsHorizontal; ii += 1, x += stepx, h += steph)
-      {
-        z.real(x);
-        // Pass the current (x, y) as the constant c
-        iterations = test(z, std::complex<FloatType>(x, y), m_maxRadius, m_maxIteration);
-
-        // If the point is inside the Mandelbrot set (iterations == 0), color it red
-        if (iterations == 0)
-        {
-          glColor3f(1.0f, 0.0f, 0.0f); // Red color for points inside the set
-        }
-        else
-        {
-          // Points that are diverging should be white (background)
-          glColor3f(1.0f, 1.0f, 1.0f); // White color for points outside the set
-        }
-
-        glVertex2d(h, v);
-      }
-    }
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glEnd();
-    glColor3f(1.0f, 0.0f, 0.0f);
-  }
 };
 
 void Display5()
@@ -519,7 +529,8 @@ protected:
       // If the magnitude of z exceeds the escape radius, it's outside the set
       if (std::abs(z) > maxRadius)
       {
-        return 1; // Return the number of iterations before escaping
+        return i; // Return the number of iterations before escaping
+        // https://en.wikipedia.org/wiki/Julia_set#Pseudocode_for_normal_Julia_sets
       }
     }
 
@@ -530,6 +541,93 @@ protected:
 public:
   MB(FloatType xmin, FloatType xmax, FloatType ymin, FloatType ymax, FloatType a = 0, FloatType b = 0, FloatType maxRadius = 20, int maxIteration = 150) : JF<FloatType>(xmin, xmax, ymin, ymax, a, b, maxRadius, maxIteration) {}
   // You can add additional drawing logic specific to the Mandelbrot set if needed
+
+  void draw(FloatType l, FloatType r, FloatType b, FloatType t, int samplePointsHorizontal, int samplePointsVertical)
+  {
+    // Clear the background to white
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set background to white (RGBA: 1.0f, 1.0f, 1.0f, 1.0f)
+    glClear(GL_COLOR_BUFFER_BIT);
+    glPointSize(1);
+    FloatType stepx = (this->m_xmax - this->m_xmin) / FloatType(samplePointsHorizontal);
+    FloatType stepy = (this->m_ymax - this->m_ymin) / FloatType(samplePointsVertical);
+    FloatType steph = (r - l) / FloatType(samplePointsHorizontal);
+    FloatType stepv = (t - b) / FloatType(samplePointsVertical);
+    int iterations;
+    std::complex<FloatType> z;
+    glBegin(GL_POINTS);
+
+    for (FloatType jj = 0, y = this->m_ymin, v = b; jj < samplePointsVertical; jj += 1, y += stepy, v += stepv)
+    {
+      z.imag(y);
+
+      for (FloatType ii = 0, x = this->m_xmin, h = l; ii < samplePointsHorizontal; ii += 1, x += stepx, h += steph)
+      {
+        z.real(x);
+        // Pass the current (x, y) as the constant c
+        iterations = test(z, std::complex<FloatType>(x, y), this->m_maxRadius, this->m_maxIteration);
+
+        // If the point is inside the Mandelbrot set (iterations == 0), color it red
+        if (iterations == 0)
+        {
+          glColor3f(1.0f, 0.0f, 0.0f); // Red color for points inside the set
+        }
+        else
+        {
+          // Points that are diverging should be white (background)
+          glColor3f(1.0f, 1.0f, 1.0f); // White color for points outside the set
+        }
+
+        glVertex2d(h, v);
+      }
+    }
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glEnd();
+    glColor3f(1.0f, 0.0f, 0.0f);
+  }
+
+  void color(FloatType l, FloatType r, FloatType b, FloatType t, int samplePointsHorizontal, int samplePointsVertical)
+  {
+    // Clear the background to white
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set background to white (RGBA: 1.0f, 1.0f, 1.0f, 1.0f)
+    glClear(GL_COLOR_BUFFER_BIT);
+    glPointSize(1);
+    FloatType stepx = (this->m_xmax - this->m_xmin) / FloatType(samplePointsHorizontal);
+    FloatType stepy = (this->m_ymax - this->m_ymin) / FloatType(samplePointsVertical);
+    FloatType steph = (r - l) / FloatType(samplePointsHorizontal);
+    FloatType stepv = (t - b) / FloatType(samplePointsVertical);
+    int iterations;
+    std::complex<FloatType> z;
+    glBegin(GL_POINTS);
+
+    for (FloatType jj = 0, y = this->m_ymin, v = b; jj < samplePointsVertical; jj += 1, y += stepy, v += stepv)
+    {
+      z.imag(y);
+
+      for (FloatType ii = 0, x = this->m_xmin, h = l; ii < samplePointsHorizontal; ii += 1, x += stepx, h += steph)
+      {
+        z.real(x);
+        // Pass the current (x, y) as the constant c
+        iterations = test(z, std::complex<FloatType>(x, y), this->m_maxRadius, this->m_maxIteration);
+
+        // If the point is inside the Mandelbrot set (iterations == 0), color it red
+        if (iterations == 0)
+        {
+          glColor3f(0.0f, 0.0f, 0.0f); // Black for points inside the Mandelbrot set
+        }
+        else // Meant for points outside the set
+        {
+          // Normalize the iterations number between 0 and 1
+          float t = float(iterations) / float(this->m_maxIteration);
+          glColor3f(0.0f, t, t); // gradient becomes more visible at higher brightness
+        }
+
+        glVertex2d(h, v);
+      }
+    }
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glEnd();
+    glColor3f(1.0f, 0.0f, 0.0f);
+  }
 };
 
 void Display6()
@@ -542,13 +640,23 @@ void Display6()
     is weird because pixels are actually placed at 0.5 coordinates.
     More on this in the Shaders homework and lecture.
   */
-  // mb.drawMB(-drawSize, drawSize, -drawSize, drawSize, g_w + 1, g_h + 1);
-  mb.drawMB(-drawSize, drawSize, -drawSize, drawSize, DEFAULT_WINDOW_W + 1, DEFAULT_WINDOW_H + 1);
+  // mb.draw(-drawSize, drawSize, -drawSize, drawSize, g_w + 1, g_h + 1);
+  mb.draw(-drawSize, drawSize, -drawSize, drawSize, DEFAULT_WINDOW_W + 1, DEFAULT_WINDOW_H + 1);
 }
 
-void Display7() // TODO: modify drawMB()
+void Display7()
 {
   // Draw the colored Mandelbrot fractal here.
+  // Draw the Mandelbrot fractal here.
+  float drawSize = 1.0;
+  MB<double> mb(-2, 2, -2, 2);
+  /*
+    +1 because we're going full-window, and pixel-perfect drawing
+    is weird because pixels are actually placed at 0.5 coordinates.
+    More on this in the Shaders homework and lecture.
+  */
+  // mb.draw(-drawSize, drawSize, -drawSize, drawSize, g_w + 1, g_h + 1);
+  mb.color(-drawSize, drawSize, -drawSize, drawSize, DEFAULT_WINDOW_W + 1, DEFAULT_WINDOW_H + 1);
 }
 
 void Display8()
