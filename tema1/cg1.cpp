@@ -373,36 +373,22 @@ void Display3()
 
 void fractalHexLine(Turtle t, float distance, int recursionsLeft = 1)
 {
-  if (recursionsLeft > 0)
+  if (recursionsLeft > 0) // recursively splits the current line in segments 
   {
     --recursionsLeft;
-    distance /= 5;
+    distance /= 2; // after each recursion, the segment length is reduced (because each smaller segment is supposed to be one-third of the original)
 
-    // First segment
+    // Draw straight forwards: '_'
     fractalHexLine(t, distance, recursionsLeft);
     t.move(distance);
 
-    // Left turn (start hex bump)
+    // Turn left: '/'
     t.rotate(pi / 3);
     fractalHexLine(t, distance, recursionsLeft);
     t.move(distance);
 
-    // Left turn
+    // Turn left: '\'
     t.rotate(pi / 3);
-    fractalHexLine(t, distance, recursionsLeft);
-    t.move(distance);
-
-    // Right turn
-    t.rotate(-pi / 3);
-    fractalHexLine(t, distance, recursionsLeft);
-    t.move(distance);
-
-    // Right turn (end hex bump)
-    t.rotate(-pi / 3);
-    fractalHexLine(t, distance, recursionsLeft);
-    t.move(distance);
-
-    // Last straight segment
     fractalHexLine(t, distance, recursionsLeft);
   }
   else
