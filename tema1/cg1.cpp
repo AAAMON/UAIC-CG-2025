@@ -27,7 +27,7 @@ int g_w = 1000, g_h = 1000;
 
 unsigned char g_prevKey = '1';
 
-int g_recursionMax = 8, g_recursionCurrent = 2;
+int g_recursionMax = 8, g_recursionCurrent = 4;
 double g_jfa = -0.82, g_jfb = -0.17; // Julia-Fatou a and b values.
 
 //----------------Utility functions----------------------
@@ -371,31 +371,48 @@ void Display3()
   sierpinskiCarpet(0, 0, distance, g_recursionCurrent);
 }
 
-void fractalHexLine(Turtle t, float distance, int recursionsLeft = 1)
+void sierpinskiCurve(Turtle t, float distance, int order, float angle) 
+// https://codegolf.stackexchange.com/questions/100359/draw-the-sierpinski-arrowhead-curve (MSWLogo code)
 {
-  if (recursionsLeft > 0) // recursively splits the current line in segments 
+  if (order > 0)
   {
-    --recursionsLeft;
-    distance /= 2; // after each recursion, the segment length is reduced (because each smaller segment is supposed to be one-third of the original)
+    --order;
+    distance /= 2;
 
-    // Draw straight forwards: '_'
-    fractalHexLine(t, distance, recursionsLeft);
+    t.rotate(angle);
+    sierpinskiCurve(t, distance, order, -angle);
     t.move(distance);
 
-    // Turn left: '/'
-    t.rotate(pi / 3);
-    fractalHexLine(t, distance, recursionsLeft);
+    t.rotate(-angle);
+    sierpinskiCurve(t, distance, order, angle);
     t.move(distance);
 
-    // Turn left: '\'
-    t.rotate(pi / 3);
-    fractalHexLine(t, distance, recursionsLeft);
+    t.rotate(-angle);
+    sierpinskiCurve(t, distance, order, -angle);
+
+    t.rotate(angle);
   }
   else
   {
-    t.draw(distance);
+    t.draw(distance); // base case: draw a line when no more recursion left
   }
 }
+
+/*
+void sierpinskiCurve(Turtle t, float distance, int order = 1) // https://en.wikipedia.org/wiki/Sierpi%C5%84ski_curve#Arrowhead_curve
+{
+  // idea: always start the turtle with a 60 degree rotation
+  if (order % 2 == 0) // order is an even number
+  {
+    sierpinskiCurveHelper(t, distance, order, pi / 3); // 60 degrees
+  }
+  else
+  {
+    t.rotate(pi / 3);                                   // initial turn for odd order
+    sierpinskiCurveHelper(t, distance, order, -pi / 3); // -60 degrees
+  }
+}
+*/
 
 void Display4()
 {
@@ -404,7 +421,7 @@ void Display4()
   drawRecursionLevel();
 
   Turtle t(-0.95, -0.95); // start from the lower-left corner
-  fractalHexLine(t, 1.9, g_recursionCurrent);
+  sierpinskiCurve(t, 1.9, g_recursionCurrent, pi/3);
 }
 
 template <typename FloatType>
