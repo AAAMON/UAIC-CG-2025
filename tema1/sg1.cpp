@@ -23,7 +23,7 @@ double step = 0.05;
 
 
 
-int defaultW = 1000, defaultH = 1000;
+int defaultW = 800, defaultH = 800;
 
 unsigned char prevKey;
 
@@ -404,9 +404,8 @@ void init(void)
   glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 }
 
-void Display(void)
-{
-  cout << ("Call Display") << endl;
+void Display(void) {
+  cout<<("Call Display")<<endl;
   // Clear the buffer. See init();
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -470,12 +469,6 @@ void KeyboardFunc(unsigned char key, int x, int y)
   a pressed or released button.
   (x, y) are the coordinates of the mouse.
 */
-void MouseFunc(int button, int state, int x, int y)
-{
-  std::cout << "Mouse button ";
-  std::cout << ((button == GLUT_LEFT_BUTTON) ? "left" : ((button == GLUT_RIGHT_BUTTON) ? "right" : "middle")) << " ";
-  std::cout << ((state == GLUT_DOWN) ? "pressed" : "released");
-  std::cout << " at coordinates: " << x << " x " << y << std::endl;
 void MouseFunc(int button, int state, int x, int y) {
   cout<< "Mouse button ";
   cout<<( (button == GLUT_LEFT_BUTTON) ? "left" : ((button == GLUT_RIGHT_BUTTON) ? "right": "middle") ) << " ";
