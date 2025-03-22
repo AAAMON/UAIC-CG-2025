@@ -15,15 +15,15 @@ using namespace std::complex_literals;
 // #include "glut.h" //MSVC local library install
 #include <GL/glut.h> //system-wide install (or compiler default path)
 
-const int DEFAULT_WINDOW_W = 1000;
-const int DEFAULT_WINDOW_H = 1000;
+const int DEFAULT_WINDOW_W = 800;
+const int DEFAULT_WINDOW_H = 800;
 
 double circle = atan(1) * 8;
 double halfCircle = atan(1) * 4;
 double tau = circle;    // 2 * PI = TAU
 double pi = halfCircle; // TAU / 2 = PI
 
-int g_w = 1000, g_h = 1000;
+int g_w = 800, g_h = 800;
 
 unsigned char g_prevKey = '1';
 
