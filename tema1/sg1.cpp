@@ -6,8 +6,12 @@
 #include <cmath>
 #include <cfloat>
 #include <iostream>
+#include <utility>
+#include <vector>
 //#include "glut.h" //MSVC local library install
 #include <GL/glut.h> //system-wide install (or compiler default path)
+
+using namespace std;
 
 double circle = atan(1) * 8; 
 double halfCircle = atan(1) * 4;
@@ -16,6 +20,7 @@ double pi = halfCircle; // TAU / 2 = PI
 
 //How often should the drawing algorithm sample the function.
 double step = 0.05;
+
 
 
 int defaultW = 1000, defaultH = 1000;
@@ -271,19 +276,83 @@ void Display7() {
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
-// 4.2 ////////////////////////////////////////////////////////////////////////////////
+// 5 //////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
-/*
-5) Longchamps' Trisectrix:
-\(
-x = \frac{a}{4 \cdot cos^2(t) - 3}, \;
-y = \frac{a \cdot tg(t)}{4 \cdot cos^2(t) - 3}, \;
-t \in (-\pi/2, \pi/2) \setminus \{ -\pi/6, \pi/6 \} \) .
-For this plot, \(a = 0.2\) .
- */
+const float a = 0.2f;
+vector<pair<float, float>> computeCurve(float scale) {
+  vector<pair<float, float>> points;
+  float dt = 0.01f; // Step size for t
+
+  // Define limits to avoid stretching to edges
+  float x_limit = 0.5f * scale;
+  float y_limit = 0.5f * scale;
+
+  for (float t = -pi / 2 + dt; t < -pi / 6; t += dt) {
+      float cos_t = cos(t);
+      float denominator = 4 * cos_t * cos_t - 3;
+
+      if (abs(denominator) < 1e-5) continue; // Avoid division by zero
+
+      float x = a / denominator;
+      float y = (a * tan(t)) / denominator;
+
+      // Ensure the point belongs to the top-left leaf (x < 0, y > 0)
+      // AND stays within the predefined limits
+      if (x < 0 && y > 0 && abs(x) < x_limit && abs(y) < y_limit) {
+          points.emplace_back(x * scale, y * scale); // Apply scaling
+      }
+  }
+  return points;
+}
 
 void Display8() {
+  glClear(GL_COLOR_BUFFER_BIT);
+  glColor3f(1.0f, 0.0f, 0.0f); // Red curve
+
+  float scale = 1.3f; // Adjust for zooming, but empty space remains
+  vector<pair<float, float>> points = computeCurve(scale);
+
+  if (points.empty()) return; // Safety check
+
+  // Define the upper-left corner of the window scaled by the 'scale' factor
+  float x_max = -1.0f / 1.23; // Scaled left of the screen
+  float y_max = 1.0f / 1.25;  // Scaled top of the screen
+
+  // Get the leftmost point from the curve
+  float x_curve_min = points.front().first;
+  float y_curve_min = points.front().second;
+
+  // Draw filled shape from top-left to the curve
+  glColor3f(1.0f, 0.5f, 0.5f); // Light red fill
+ // Draw solid color alternating triangles
+glBegin(GL_TRIANGLES);
+for (size_t i = 0; i < points.size() - 1; ++i) {
+    // Alternate colors for each triangle
+    if (i % 2 == 0) {
+        glColor3f(1.0f, 0.5f, 0.5f); // Red
+    } else {
+        glColor3f(1.0f, 1.0f, 1.0f); // White
+    }
+
+    // Draw each triangle: (x_max, y_max) to two consecutive points
+    glVertex2f(x_max, y_max);            // Top-left corner (fixed vertex)
+    glVertex2f(points[i].first, points[i].second); // Current curve point
+    glVertex2f(points[i + 1].first, points[i + 1].second); // Next curve point
 }
+
+glEnd();
+
+  // Draw curve outline
+  glColor3f(1.0f, 0.0f, 0.0f); // Red outline
+  glBegin(GL_LINE_STRIP);
+  for (const auto& p : points) {
+      glVertex2f(p.first, p.second);
+  }
+  glEnd();
+
+  glFlush();
+}
+
 
 
 void Display9() {
@@ -310,7 +379,7 @@ void init(void) {
 }
 
 void Display(void) {
-  std::cout<<("Call Display")<<std::endl;
+  cout<<("Call Display")<<endl;
   // Clear the buffer. See init();
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -372,10 +441,10 @@ void KeyboardFunc(unsigned char key, int x, int y) {
   (x, y) are the coordinates of the mouse.
 */
 void MouseFunc(int button, int state, int x, int y) {
-  std::cout<< "Mouse button ";
-  std::cout<<( (button == GLUT_LEFT_BUTTON) ? "left" : ((button == GLUT_RIGHT_BUTTON) ? "right": "middle") ) << " ";
-  std::cout<< ( (state == GLUT_DOWN) ? "pressed" : "released" );
-  std::cout<< " at coordinates: " << x <<" x " << y << std::endl;
+  cout<< "Mouse button ";
+  cout<<( (button == GLUT_LEFT_BUTTON) ? "left" : ((button == GLUT_RIGHT_BUTTON) ? "right": "middle") ) << " ";
+  cout<< ( (state == GLUT_DOWN) ? "pressed" : "released" );
+  cout<< " at coordinates: " << x <<" x " << y << endl;
 }
 
 int main(int argc, char** argv) {
