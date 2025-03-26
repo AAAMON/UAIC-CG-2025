@@ -249,7 +249,7 @@ double yLogSpiral(double a, double b, double t)
 void Display6()
 {
   double a = 0.02;                           // Given value for a
-  double intervalStart = 0, intervalEnd = 5; // Limiting t to avoid runaway growth
+  double intervalStart = 0, intervalEnd = 4; // Limiting t to avoid runaway growth
   double step = 0.01;
 
   // Shrink the graph slightly by scaling
@@ -322,7 +322,7 @@ vector<pair<float, float>> computeCurve(float scale) {
 
       // Ensure the point belongs to the top-left leaf (x < 0, y > 0)
       // AND stays within the predefined limits
-      if (x < 0 && y > 0 && abs(x) < x_limit && abs(y) < y_limit) {
+      if (abs(x) < x_limit && abs(y) < y_limit) {
           points.emplace_back(x * scale, y * scale); // Apply scaling
       }
   }

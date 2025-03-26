@@ -27,7 +27,7 @@ int g_w = 800, g_h = 800;
 
 unsigned char g_prevKey = '1';
 
-int g_recursionMax = 8, g_recursionCurrent = 4;
+int g_recursionMax = 8, g_recursionCurrent = 2;
 double g_jfa = -0.82, g_jfb = -0.17; // Julia-Fatou a and b values.
 
 //----------------Utility functions----------------------
@@ -352,7 +352,6 @@ void Display3()
   // Big square
   glColor3f(1, 0, 0);
   drawRecursionLevel();
-
   // 0,0 e centrul ecranului
   Turtle t0(-0.95, -0.95);
   float distance = 1.9;
