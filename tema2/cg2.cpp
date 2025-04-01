@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <iostream>
+#include <vector>
 // #include "glut.h" //MSVC local library install
 #include <GL/glut.h> //system-wide install (or compiler default path)
 #include "cg2_lib.h"
@@ -30,23 +31,51 @@
 const int DEFAULT_WINDOW_W = 800;
 const int DEFAULT_WINDOW_H = 800;
 
+
+#define GRID_SIZE 20  // Grid cell size in pixels
+
+int windowWidth = 800, windowHeight = 800;
+int gridRows, gridCols;
+
 unsigned char g_prevKey = '1';
 
 void Display1()
 {
-  drawGrid(5, 5);
-  // draw primitive line as well
-  drawBresenhamLine(-5, -5, 5, 3);
-  drawBresenhamLine(-5, -5, -2, 6);
+  glClear(GL_COLOR_BUFFER_BIT);
+  drawGrid(gridRows, gridCols);
+  drawThickLine(2, 15, 27, 18, 3); // Example line
+  drawThickCircle(20, 20, 17, 3);   // Example circle
+  drawPixel(5, 5);       // Example pixel
+  glutSwapBuffers();
 }
 
 void Display2()
 {
+  glClear(GL_COLOR_BUFFER_BIT);
+  drawGrid(gridRows, gridCols);
+  drawFilledCircle(20, 20, 17);
+  glutSwapBuffers();
 }
 
 void Display3()
 {
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawGrid(gridRows, gridCols);
+
+    drawThickLine(2, 20, 7, 7, 3);
+    drawThickLine(7, 7, 20, 2, 3);
+    drawThickLine(20, 2, 33, 7, 3);
+    drawThickLine(33, 7, 38, 20, 3);
+
+    drawThickLine(2, 20, 7, 33, 3);
+    drawThickLine(7, 33, 20, 38, 3);
+    drawThickLine(20, 38, 33, 33, 3);
+    drawThickLine(33, 33, 38, 20, 3);
+
+    glutSwapBuffers();
 }
+
+
 
 void Display4()
 {
@@ -110,30 +139,22 @@ void Display(void)
   glFlush();
 }
 
-// GLUT CALLBACK: WINDOW RESIZE
-void resizeCb(int w, int h)
-{
-  std::cout << "Window resize. Width: " << w << " height: " << h << std::endl;
-  glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+// Ensures cells remain square when resizing
+void resizeCb(int width, int height) {
+  windowWidth = width;
+  windowHeight = height;
 
-  // Set the projection matrix to preserve aspect ratio
+  glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
+  
+  gridCols = width / GRID_SIZE;
+  gridRows = height / GRID_SIZE;
 
-  // Adjust the orthogonal projection based on the new window size
-  if (w <= h)
-  {
-    // Adjust for portrait aspect ratio
-    glOrtho(-1.0, 1.0, -1.0 * (GLfloat)h / (GLfloat)w, 1.0 * (GLfloat)h / (GLfloat)w, -1.0, 1.0);
-  }
-  else
-  {
-    // Adjust for landscape aspect ratio
-    glOrtho(-1.0 * (GLfloat)w / (GLfloat)h, 1.0 * (GLfloat)w / (GLfloat)h, -1.0, 1.0, -1.0, 1.0);
-  }
-
-  // Switch back to modelview matrix
+  gluOrtho2D(0, gridCols, 0, gridRows);
+  
   glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
 }
 
 void keyboardCb(unsigned char key, int x, int y)
@@ -161,7 +182,8 @@ void initGraphics(int argc, char **argv)
   glutInitWindowSize(DEFAULT_WINDOW_W, DEFAULT_WINDOW_H);
   // let window manager decide initial window position
   glutInitWindowPosition(-1, -1);
-  glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+
   // argv[0] is window name
   glutCreateWindow(argv[0]);
 
