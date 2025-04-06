@@ -308,9 +308,3 @@ void drawFilledCircle(int cx, int cy, int r) {
      // Draw OpenGL circle to compare (as an outline)
      drawOpenGLCircle(cx, cy, r);
 }
-
-
-
-
- // Task 2 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
